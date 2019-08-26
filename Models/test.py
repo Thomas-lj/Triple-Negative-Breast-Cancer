@@ -1,4 +1,4 @@
-__author__ = 'Forked_to_Thomas'
+# Testing conv_autoencoder, Thomas
 
 import torch
 import torchvision
@@ -11,18 +11,13 @@ from torchvision.utils import save_image
 from torchvision.datasets import MNIST
 import os
 
-if not os.path.exists('./dc_img'):
-    os.mkdir('./dc_img')
-
-
 def to_img(x):
     x = 0.5 * (x + 1)
     x = x.clamp(0, 1)
     x = x.view(x.size(0), 1, 28, 28)
     return x
 
-
-num_epochs = 100
+num_epochs = 2
 batch_size = 256
 learning_rate = 1e-3
 
@@ -33,38 +28,27 @@ transforms.Normalize((0.5,), (0.5,))
 dataset = MNIST('./data', transform=img_transform, download=True)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-
 class autoencoder(nn.Module):
     def __init__(self):
         super(autoencoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(1, 16, 3, stride=3, padding=1),  # b, 16, 10, 10
-            nn.ReLU(True),
-            nn.MaxPool2d(2, stride=2),  # b, 16, 5, 5
-            nn.Conv2d(16, 8, 3, stride=2, padding=1),  # b, 8, 3, 3
-            nn.ReLU(True),
-            nn.MaxPool2d(2, stride=1)  # b, 8, 2, 2
+            nn.Conv2d(1, 10, 3, stride=1, padding=1),  
+            nn.ReLU(True)
         )
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(8, 16, 3, stride=2),  # b, 16, 5, 5
-            nn.ReLU(True),
-            nn.ConvTranspose2d(16, 8, 5, stride=3, padding=1),  # b, 8, 15, 15
-            nn.ReLU(True),
-            nn.ConvTranspose2d(8, 1, 2, stride=2, padding=1),  # b, 1, 28, 28
+            nn.ConvTranspose2d(10, 1, 3, stride=1, padding=1),
             nn.Tanh()
         )
-
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
         return x
-
-
+    
 model = autoencoder().cuda()
+print(summary(model, (1,28,28)))
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate,
                              weight_decay=1e-5)
-model_summary = summary(model, (1,28,28))
 for epoch in range(num_epochs):
     for data in dataloader:
         img, _ = data
@@ -76,7 +60,7 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    # ===================log========================
+        # ===================log========================
     print('epoch [{}/{}], loss:{:.4f}'
           .format(epoch+1, num_epochs, loss.data.item()))
     if epoch % 10 == 0:
