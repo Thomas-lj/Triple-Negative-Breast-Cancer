@@ -390,11 +390,11 @@ class CoolSystem(pl.LightningModule):
         # self.Encoder()
         # self.Decoder()
         self.__build_model()
-
+        
     def __build_model(self):
         ## Encoder part
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)#, return_indices = True)
@@ -402,9 +402,11 @@ class CoolSystem(pl.LightningModule):
         self.layer2 = self._make_layer(self.block, 128, self.layers[1], stride=2)
         self.layer3 = self._make_layer(self.block, 256, self.layers[2], stride=2)
         self.layer4 = self._make_layer(self.block, 512, self.layers[3], stride=2)
-        # self.avgpool = nn.AvgPool2d(7, stride=1)
+        self.avgpool = nn.AvgPool2d((1,1))
+        # self.fc = nn.Linear(512, 1000)
+        # self.LatRep = nn.Linear(512, 1)
         # self.LatRep = nn.AvgPool2d(3, stride=1)
-        self.LatRep = nn.AdaptiveAvgPool2d((1,1))
+        # self.LatRep = nn.AdaptiveAvgPool2d((1,1))
         # self.LatRep = nn.Linear(512 * block.expansion, num_classes)
         # self.LatRep = nn.Linear(1,512)
         for m in self.modules():
@@ -462,7 +464,11 @@ class CoolSystem(pl.LightningModule):
         # print(x.shape)
         x = self.layer4(x)
         # print(x.shape)
-        x = self.LatRep(x)
+        x = self.avgpool(x)
+        # print(x.shape)
+        # x = self.fc(x)
+        # print(x.shape)
+        # x = self.LatRep(x)
         # print(x.shape)
         x = self.dconv4(x)
         # print(x.shape)
@@ -500,7 +506,6 @@ class CoolSystem(pl.LightningModule):
         x_hat = self.forward(x)
         loss_val = self.loss(x, x_hat)
         output = OrderedDict({'val_loss': loss_val})
-
         return output
 
     def validation_end(self, outputs):
@@ -538,16 +543,27 @@ class CoolSystem(pl.LightningModule):
         # OPTIONAL
         return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
 
+# Defining original 
 model = CoolSystem(BasicBlock)
 # model = MnistResNet()
+model_dict = model.state_dict()
+# Loading pretrained weights
+weight_path = os.path.abspath(r"C:\\Source\\Research Repositories\\TNBC\\models\resnet18_pretrained.pth")
+weights = torch.load(weight_path)
+# model.load_state_dict(weights)
+
+# Transferring weights from pretrained Resnet to my model only if they match
+pretrained_dict = {k: v for k, v in weights.items() if k in model_dict}
+model_dict.update(pretrained_dict)
+model.load_state_dict(model_dict)
+# Adjusting input/output layers to match 
+model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+# model.fc = nn.Linear(512, 1)
 # binary = Binary()
-# encoder = Encoder(BasicBlock, [3, 4, 6, 3])
-# decoder = Decoder()
-# AE = Autoencoder()
 # model.cuda(0)
 # model.on_gpu=True
 
-trainer = Trainer(max_nb_epochs=1, overfit_pct=0.1)
+trainer = Trainer(max_nb_epochs=2, overfit_pct=0.1)
 # trainer = Trainer(max_nb_epochs=1, overfit_pct=0.1, gpus=[0])    
 
 trainer.fit(model)  
