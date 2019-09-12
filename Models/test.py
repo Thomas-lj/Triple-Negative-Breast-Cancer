@@ -92,9 +92,6 @@ except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
 
-
-from dataloader.datagen import get_data_loaders
-
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
            'wide_resnet50_2', 'wide_resnet101_2']
@@ -228,7 +225,7 @@ class ResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(1, self.inplanes, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
@@ -240,8 +237,20 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.LatRep = nn.AvgPool2d(7, stride=1)
+        # self.fc = nn.Linear(512 * block.expansion, num_classes)
+        
+
+        self.dconv4 = nn.ConvTranspose2d(512, 256, 14) # Note, Thomas: if this creates error go back to padding=0 
+        self.dconv3 = nn.ConvTranspose2d(256, 128, 15)
+        self.dconv2 = nn.ConvTranspose2d(128, 64, 29)
+        self.dconv1 = nn.ConvTranspose2d(64, 32, 57)
+        self.dconv0 = nn.ConvTranspose2d(32, 1, 113)
+
+        # self.dconv4 = nn.ConvTranspose2d(512, 256, 14)
+        # self.dconv3 = nn.ConvTranspose2d(256, 1, 15)
+        
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -286,19 +295,38 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
+        # print(x.shape)
         x = self.bn1(x)
+        # print(x.shape)
         x = self.relu(x)
+        # print(x.shape)
         x = self.maxpool(x)
-
+        # print(x.shape)
         x = self.layer1(x)
+        # print(x.shape)
         x = self.layer2(x)
+        # print(x.shape)
         x = self.layer3(x)
+        # print(x.shape)
         x = self.layer4(x)
-
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc(x)
-
+        # print(x.shape)
+        # x = self.avgpool(x)
+        # print(x.shape)
+        # x = torch.flatten(x, 1)
+        # print(x.shape)
+        # x = self.fc(x)
+        x = self.LatRep(x)
+        # print(x.shape)
+        x = self.dconv4(x)
+        # print(x.shape)
+        x = self.dconv3(x)
+        # print(x.shape)
+        x = self.dconv2(x)
+        # print(x.shape)
+        x = self.dconv1(x)
+        # print(x.shape)
+        x = self.dconv0(x)
+        # print(x.shape)
         return x
 
 
@@ -321,11 +349,9 @@ def resnet18(pretrained=False, **kwargs):
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
     return model
 
-
-
 class MnistResNet(ResNet):
     def __init__(self):
-        super(MnistResNet, self).__init__(BasicBlock, [2, 2, 2, 2], num_classes=10)
+        super(MnistResNet, self).__init__(BasicBlock, [2, 2, 2, 2])
         self.conv1 = torch.nn.Conv2d(1, 64, 
             kernel_size=(7, 7), 
             stride=(2, 2), 
@@ -346,3 +372,4 @@ def print_scores(p, r, f1, a, batch_size):
     # just an utility printing function
     for name, scores in zip(("precision", "recall", "F1", "accuracy"), (p, r, f1, a)):
         print(f"\t{name.rjust(14, ' ')}: {sum(scores)/batch_size:.4f}")
+

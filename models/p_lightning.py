@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from pytorch_lightning import Trainer
 from torch.autograd import Function
-
 import torchvision.models as models
+
 
 ## Complete ResNet architecture for x classes
 
@@ -172,6 +172,8 @@ class CoolSystem(pl.LightningModule):
 
     def training_step(self, batch, batch_nb): # where the magic happens
         # REQUIRED
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # x, y = batch[0].to(device), batch[1].to(device)
         x, y = batch
         x_hat, LatRep = self.forward(x)
         loss_val = self.loss(x, x_hat)
@@ -196,7 +198,7 @@ class CoolSystem(pl.LightningModule):
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         LatRep = torch.stack([x['latent'] for x in outputs])
         recon = torch.stack([x['recon'] for x in outputs])
-        print(LatRep.shape)
+        # # print(LatRep.shape)
         return {'avg_val_loss': avg_loss}
 
     def configure_optimizers(self):
@@ -217,20 +219,21 @@ class CoolSystem(pl.LightningModule):
     @pl.data_loader
     def tng_dataloader(self):
         # REQUIRED
-        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
+        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=256)
 
     @pl.data_loader
     def val_dataloader(self):
         # OPTIONAL
-        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
+        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=256)
 
     @pl.data_loader
     def test_dataloader(self):
         # OPTIONAL
-        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
+        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=256)
 
 # Defining original 
 model = CoolSystem(BasicBlock)
+model.cuda()
 # model = MnistResNet()
 model_dict = model.state_dict()
 # Loading pretrained weights
@@ -244,11 +247,11 @@ model_dict.update(pretrained_dict)
 model.load_state_dict(model_dict)
 # Adjusting input/output layers to match 
 model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-# model.cuda(0)
+model.cuda(0)
 # model.on_gpu=True
 
-trainer = Trainer(max_nb_epochs=5, overfit_pct=0.02)
-# trainer = Trainer(max_nb_epochs=1, overfit_pct=0.1, gpus=[0])    
+# trainer = Trainer(max_nb_epochs=2, overfit_pct=0.02)
+trainer = Trainer(max_nb_epochs=2, overfit_pct=0.1, gpus=[0])    
 
 trained = trainer.fit(model)  
 hej = 4
