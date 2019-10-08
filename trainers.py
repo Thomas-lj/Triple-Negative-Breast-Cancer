@@ -424,7 +424,6 @@ def trainCAE(model, train_loader, val_loader, criterion, optimizer, schedulers, 
                 labels.append(y)
                 z = z.detach().cpu().numpy()
                 z1.append(z)
-                # z1 = z1.append(z)
             z1 = np.concatenate(z1)
             labels = np.concatenate(labels)
             np.save(os.path.join(img_path, 'latrep'), z1)
