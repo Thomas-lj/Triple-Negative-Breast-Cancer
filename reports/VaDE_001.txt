@@ -1,0 +1,26 @@
+
+Performing calculations on:	cuda:0
+
+Training the 'VaDE' architecture
+
+The following parameters are used:
+Batch size:	512
+Number of workers:	4
+Learning rate:	0.001
+Pretraining learning rate:	0.001
+Weight decay:	0.0
+Pretraining weight decay:	0.0
+Scheduler steps:	200
+Scheduler gamma:	0.1
+Pretraining scheduler steps:	200
+Pretraining scheduler gamma:	0.1
+Number of epochs of training:	1000
+Number of epochs of pretraining:	100
+Clustering loss weight:	0.1
+Update interval for target distribution:	80
+Stop criterium tolerance:	0.01
+Number of clusters:	10
+Leaky relu:	True
+Leaky slope:	0.01
+Activations:	False
+Bias:	True
