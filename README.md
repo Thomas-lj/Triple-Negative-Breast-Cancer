@@ -1,5 +1,5 @@
 # Triple Negative Breast Cancer
-This project seeks to identify tumor subtypes of triple negative breast cancer using deep unsupervised clustering. This project is part of a masters thesis, 2020.
+This project seeks to identify tumor subtypes of triple negative breast cancer using deep unsupervised clustering. This project is part of Thomas' masters thesis, 2020.
 
 # Deep Convolutional Embedded Clustering
 The project implements Deep Convolutional Embedded Clustering (https://xifengguo.github.io/papers/ICONIP17-DCEC.pdf) to optimize a joint objective function:
@@ -13,17 +13,13 @@ The project implements Deep Convolutional Embedded Clustering (https://xifengguo
 ![image](https://user-images.githubusercontent.com/43189719/179660810-b8ddc64a-513c-4f78-82b6-36da06d4b65f.png)
 
 # Tissues
-As part of a proof of concept, a tissue classificator was implemented to cluster different tissue types.
-Convergence with K=4 clusters, γ=0.1>
-![Picture1](https://user-images.githubusercontent.com/43189719/179665649-3ad1166e-9f2c-4ec9-9b82-a74ef47fbfdb.gif)
-![](http://i.imgur.com/60bts.gif)
-
+A tissue classificator was implemented to cluster different tissue types: Tumor, stroma, fat and lymphocytes.
+Example of cluster convergence with hyperparameters K=4 clusters, γ=0.1:
+![Cluster training](https://user-images.githubusercontent.com/43189719/179666398-12fb2fab-9446-481b-829f-f9e2a70ccfa3.gif)
 
 # Tumor
 Tumor tiles like these were clustered assuming K=4, 8, 12 and 20 clusters.
-![image](https://user-images.githubusercontent.com/43189719/179660585-3a192ed3-9ac7-4f92-a701-524934511528.png)
-
-# Cluster training
-Example of clustering during training.
-
-![image](https://user-images.githubusercontent.com/43189719/179664975-5c2c682c-f4a2-4404-aa1c-79264c1fb007.png)
+Example of
+![image](https://user-images.githubusercontent.com/43189719/179666798-894edc52-8d5e-44d5-9ca3-900f86df78c3.png)
+Examples of Tumor tiles for K=4 clusters:
+![image](https://user-images.githubusercontent.com/43189719/179667234-0e440021-afca-4785-8685-5ea7eafc3b2f.png)
