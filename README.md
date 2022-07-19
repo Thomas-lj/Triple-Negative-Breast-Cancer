@@ -32,7 +32,10 @@ Example of cluster convergence with hyperparameters K=4 clusters, γ=0.1:
 
 # Tumor
 Tumor tiles like these were clustered assuming K=4, 8, 12 and 20 clusters.
-Example of
+Example of cluster assignment latent representations:
+
 ![image](https://user-images.githubusercontent.com/43189719/179666798-894edc52-8d5e-44d5-9ca3-900f86df78c3.png)
+
 Examples of Tumor tiles for K=4 clusters suggests a color dependency to the cluster assignments:
+
 ![image](https://user-images.githubusercontent.com/43189719/179667234-0e440021-afca-4785-8685-5ea7eafc3b2f.png)
